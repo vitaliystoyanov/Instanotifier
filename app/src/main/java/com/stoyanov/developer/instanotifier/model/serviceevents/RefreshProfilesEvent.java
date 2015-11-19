@@ -1,15 +1,15 @@
-package com.stoyanov.developer.instanotifier.model.events;
+package com.stoyanov.developer.instanotifier.model.serviceevents;
 
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class RefreshProfilesListEvent implements Serializable {
+public class RefreshProfilesEvent implements Serializable {
 
     private ArrayList<IProfile> profiles;
 
-    public RefreshProfilesListEvent(ArrayList<IProfile> profiles) {
+    public RefreshProfilesEvent(ArrayList<IProfile> profiles) {
         this.profiles = profiles;
     }
 

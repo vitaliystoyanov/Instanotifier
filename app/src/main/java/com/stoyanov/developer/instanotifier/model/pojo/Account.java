@@ -1,25 +1,21 @@
 package com.stoyanov.developer.instanotifier.model.pojo;
 
-/**
- * Created by Vitaliy Stoyanov on 9/5/2015.
- */
 public class Account {
 
     private String userId;
     private String token;
     private String username;
 
-    public Account(String userID, String token) {
-        this.userId = userID;
-        this.token = token;
-    }
-
     public Account() {
-
     }
 
     public Account(String userId) {
         this.userId = userId;
+    }
+
+    public Account(String userID, String token) {
+        this.userId = userID;
+        this.token = token;
     }
 
     public String getUserId() {

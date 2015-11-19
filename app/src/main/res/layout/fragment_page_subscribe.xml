@@ -3,10 +3,12 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <WebView
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/subscriber_recycler_view"
+        android:scrollbars="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/webView"
+        android:background="#ffffff"
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="0dp"
         android:layout_alignParentTop="true"
@@ -14,11 +16,13 @@
 
     <com.github.rahatarmanahmed.cpv.CircularProgressView
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/progress_view"
+        android:id="@+id/subscribe_progress_view"
         android:layout_width="40dp"
         android:layout_height="40dp"
         app:cpv_animAutostart="true"
         app:cpv_indeterminate="true"
-        android:layout_centerInParent="true" />
+        android:layout_centerInParent="true"
+        android:layout_alignParentLeft="false"
+        android:layout_alignParentTop="false" />
 
 </RelativeLayout>

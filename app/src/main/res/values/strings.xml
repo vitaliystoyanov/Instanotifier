@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Notify</string>
+    <string name="app_name">Instagram</string>
 
     <string name="existing_account">Такой аккаунт уже есть!</string>
     <string name="not_internet_connection">Нет интернет соединения!</string>

@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.joanzapata.android.asyncservice.api.annotation.ApplicationContext;
 import com.joanzapata.android.asyncservice.api.annotation.AsyncService;
@@ -15,10 +14,11 @@ import com.joanzapata.android.asyncservice.api.annotation.Ui;
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 import com.stoyanov.developer.instanotifier.model.Configuration;
-import com.stoyanov.developer.instanotifier.model.multiaccounts.AccountManager;
-import com.stoyanov.developer.instanotifier.model.events.RefreshProfilesListEvent;
-import com.stoyanov.developer.instanotifier.model.events.FinishLoginActivityEvent;
+import com.stoyanov.developer.instanotifier.model.serviceevents.FinishLoginEvent;
+import com.stoyanov.developer.instanotifier.model.multipleaccounts.AccountManager;
+import com.stoyanov.developer.instanotifier.model.serviceevents.RefreshProfilesEvent;
 import com.stoyanov.developer.instanotifier.model.pojo.Account;
+import com.stoyanov.developer.instanotifier.model.serviceevents.ShowSnackbarEvent;
 
 import org.jinstagram.Instagram;
 import org.jinstagram.auth.model.Token;
@@ -33,20 +33,20 @@ import java.net.URL;
 import java.util.ArrayList;
 
 @AsyncService
-public class Service {
+public class AuthorizationService {
 
     @ApplicationContext
     protected static Context context;
 
     @Init
     static void init() {
-        // Executed once for this service
+        // Executed once for this authorizationService
     }
 
-    public RefreshProfilesListEvent refreshProfiles() {
+    public RefreshProfilesEvent refreshProfiles() {
         ArrayList<IProfile> listProfiles = new ArrayList<>();
         AccountManager manager = new AccountManager(context);
-        ArrayList<Account> accounts = manager.getAllAccounts();
+        ArrayList<Account> accounts = manager.getAll();
 
         Instagram instagram =  new Instagram(Configuration.CLIENT_ID);
         for (int i = 0; i < accounts.size(); i++) {
@@ -58,8 +58,9 @@ public class Service {
 
                 Drawable profileImage = drawableFromUrl(userInfoData.getProfile_picture());
                 listProfiles.add(new ProfileDrawerItem()
-                        //.withEmail(session.getUsername())
                         .withName(userInfoData.getUsername())
+                        .withEmail("ID:"+userInfoData.getId())
+                        .withNameShown(true)
                         .withIcon(profileImage));
             } catch (InstagramException e) {
                 e.printStackTrace();
@@ -68,14 +69,14 @@ public class Service {
             }
         }
         if (listProfiles != null && listProfiles.size() > 0) {
-            Log.i("DBG", "listprofiles != null or > 0");
-            return new RefreshProfilesListEvent(listProfiles);
+            Log.i("DBG", "return new RefreshProfilesEvent(listProfiles);");
+            return new RefreshProfilesEvent(listProfiles);
         } else {
             return null;
         }
     }
 
-    public FinishLoginActivityEvent auth(String accessToken) {
+    public FinishLoginEvent authorization(String accessToken) {
         Instagram instagram = new Instagram(Configuration.CLIENT_ID);
         Token token = new Token(accessToken, Configuration.CLIENT_ID);
         instagram.setAccessToken(token);
@@ -91,26 +92,25 @@ public class Service {
         Account account = new Account(infoData.getId());
         account.setToken(accessToken);
         account.setUsername(infoData.getUsername());
-        if (manager.containe(account) != true) {
-            manager.add(account);
+        if (manager.contain(account) != true) {
+            manager.insert(account);
+            manager.setCurrent(account);
             displayMessage("Аккаунт добавлен!");
         } else
             displayMessage("Такой аккаунт уже есть!");
-        return new FinishLoginActivityEvent();
+        return new FinishLoginEvent();
     }
 
     @Ui
-    protected void displayMessage(String message) {
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+    protected ShowSnackbarEvent displayMessage(String message) {
+        return new ShowSnackbarEvent(message);
     }
 
     private Drawable drawableFromUrl(String url) throws IOException {
         Bitmap x;
-
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.connect();
         InputStream input = connection.getInputStream();
-
         x = BitmapFactory.decodeStream(input);
         return new BitmapDrawable(x);
     }

@@ -1,24 +1,33 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/coordinator"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E0E0E0"
-    tools:context=".MainActivity">
+    android:background="#E0E0E0">
 
-    <android.support.design.widget.CoordinatorLayout
-
-        android:id="@+id/coordinator"
+    <RelativeLayout
+        android:id="@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"></android.support.design.widget.CoordinatorLayout>
+        android:layout_height="match_parent"
+        android:scrollIndicators="right"
+        android:paddingTop="56dp" />
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/primary_second_color" />
+        android:layout_height="56dp"
+        android:background="@color/primary_second_color"
+        android:elevation="4dp" />
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/container"
-        android:layout_below="@+id/toolbar"></RelativeLayout>
-</RelativeLayout>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:src="@drawable/abc_ic_menu_share_mtrl_alpha"
+        app:layout_anchor="@id/container"
+        app:layout_anchorGravity="bottom|right|end"
+        android:visibility="invisible" />
+
+</android.support.design.widget.CoordinatorLayout>
+

@@ -1,9 +1,7 @@
-package com.stoyanov.developer.instanotifier.controllers;
+package com.stoyanov.developer.instanotifier.controller;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,55 +10,46 @@ import android.webkit.CookieSyncManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.github.rahatarmanahmed.cpv.CircularProgressView;
 import com.joanzapata.android.asyncservice.api.annotation.InjectService;
 import com.joanzapata.android.asyncservice.api.annotation.OnMessage;
 import com.joanzapata.android.asyncservice.api.internal.AsyncService;
 import com.stoyanov.developer.instanotifier.R;
 import com.stoyanov.developer.instanotifier.model.Configuration;
-import com.stoyanov.developer.instanotifier.model.events.FinishLoginActivityEvent;
-import com.stoyanov.developer.instanotifier.model.services.Service;
+import com.stoyanov.developer.instanotifier.model.serviceevents.FinishLoginEvent;
+import com.stoyanov.developer.instanotifier.model.services.AuthorizationService;
 
 import de.greenrobot.event.EventBus;
-import me.zhanghai.android.materialprogressbar.IndeterminateProgressDrawable;
-
 
 public class LoginActivity extends Activity {
 
     private static final String TAG = "DBG";
-
-    private String colorString = "#2d5b81";
+    private CircularProgressView progressView;
     private WebView webView;
-    private ProgressBar progressBar;
 
     @InjectService
-    public Service service;
+    public AuthorizationService authorizationService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        if (progressBar != null) {
-            IndeterminateProgressDrawable drawable = new IndeterminateProgressDrawable(this);
-            drawable.setColorFilter(Color.parseColor(colorString), PorterDuff.Mode.SRC);
-            progressBar.setIndeterminateDrawable(drawable);
-        }
+        progressView = (CircularProgressView) findViewById(R.id.progress_view);
+        progressView.startAnimation();
+        int colorProgressBar = getResources().getColor(R.color.primary_second_color);
+        progressView.setColor(colorProgressBar);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        EventBus.getDefault().register(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -86,12 +75,11 @@ public class LoginActivity extends Activity {
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            Log.d(TAG, "Redirecting URL " + url);
+            Log.d(TAG, "[LoginActivity]Redirecting URL " + url);
             if (url.startsWith(Configuration.REDIRECT_URL)) {
                 String urls[] = url.split("=");
                 String accesstToken = urls[1];
-
-                service.auth(accesstToken);
+                authorizationService.authorization(accesstToken);
                 return true;
             }
             return false;
@@ -100,8 +88,7 @@ public class LoginActivity extends Activity {
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
             super.onReceivedError(view, errorCode, description, failingUrl);
-            Log.d(TAG, "Page error: " + description);
-
+            Log.d(TAG, "[LoginActivity]Page error: " + description);
             Toast.makeText(getApplicationContext()
                     , getResources().getString(R.string.not_internet_connection)
                     , Toast.LENGTH_SHORT).show();
@@ -110,8 +97,8 @@ public class LoginActivity extends Activity {
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            Log.d(TAG, "Loading URL: " + url);
-            progressBar.setVisibility(View.VISIBLE);
+            progressView.setVisibility(View.VISIBLE);
+            Log.d(TAG, "[LoginActivity]Loading URL: " + url);
             if (pendingUrl == null) pendingUrl = url;
             super.onPageStarted(view, url, favicon);
         }
@@ -119,18 +106,17 @@ public class LoginActivity extends Activity {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            progressBar.setVisibility(View.INVISIBLE);
+            progressView.setVisibility(View.INVISIBLE);
             if (!url.equals(pendingUrl)) {
-                Log.d("DBG", "Detected HTTP redirect " + pendingUrl + "->" + url);
+                Log.d("DBG", "[LoginActivity]Detected HTTP redirect " + pendingUrl + "->" + url);
                 pendingUrl = null;
             }
-            Log.d(TAG, "onPageFinished URL: " + url);
+            Log.d(TAG, "[LoginActivity]onPageFinished URL: " + url);
         }
     }
 
-    @OnMessage(FinishLoginActivityEvent.class)
-    public void onEvent(FinishLoginActivityEvent event) {
-        Log.i("DBG","onEvent(FinishLoginActivityEvent event)");
+    @OnMessage(FinishLoginEvent.class)
+    public void onEvent(FinishLoginEvent event) {
         finish();
     }
 
