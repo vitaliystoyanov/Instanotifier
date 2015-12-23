@@ -7,6 +7,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -35,8 +36,7 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.stoyanov.developer.instanotifier.R;
 import com.stoyanov.developer.instanotifier.controller.fragments.FeedFragment;
 import com.stoyanov.developer.instanotifier.controller.fragments.SubscriberFragment;
-import com.stoyanov.developer.instanotifier.controller.fragments.ProfileFragment;
-import com.stoyanov.developer.instanotifier.model.multipleaccounts.ChangeAccountListener;
+import com.stoyanov.developer.instanotifier.model.multipleaccounts.OnChangeAccountListener;
 import com.stoyanov.developer.instanotifier.model.multipleaccounts.AccountManager;
 import com.stoyanov.developer.instanotifier.model.serviceevents.RefreshProfilesEvent;
 import com.stoyanov.developer.instanotifier.model.pojo.Account;
@@ -56,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
     private Drawer navigationDrawer;
     private FragmentManager fragmentManager;
     private FeedFragment feedFragment;
-    private ProfileFragment profileFragment;
     private SubscriberFragment subscriberFragment;
     private View content;
     private AccountManager manager;
@@ -114,10 +113,9 @@ public class MainActivity extends AppCompatActivity {
         ImageLoader.getInstance().init(config);
         fragmentManager = getSupportFragmentManager();
         feedFragment = new FeedFragment();
-        profileFragment = new ProfileFragment();
         subscriberFragment = new SubscriberFragment();
         manager = new AccountManager(getApplicationContext());
-        manager.setChangeAccountListener(new ChangeAccountListener() {
+        manager.setOnChangeAccountListener(new OnChangeAccountListener() {
             @Override
             public void onChangeAccount(Account oldAccount, Account newAccount) {
                 makeFragmentTransaction(feedFragment, TAG_FRAGMENT_FEED);
@@ -193,13 +191,16 @@ public class MainActivity extends AppCompatActivity {
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
                     public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                        ActionBar actionBar = getSupportActionBar();
+
                         switch (drawerItem.getIdentifier()) {
                             case 2: {
+                                actionBar.setTitle(R.string.drawer_item_feed);
                                 makeFragmentTransaction(feedFragment, TAG_FRAGMENT_FEED);
                                 break;
                             }
                             case 3: {
-                                makeFragmentTransaction(profileFragment, TAG_FRAGMENT_PROFILE);
+                                startProfileActivity();
                                 break;
                             }
                             case 6: {
@@ -244,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
                         public boolean onProfileChanged(View view, IProfile iProfile, boolean b) {
                             switch (iProfile.getIdentifier()) {
                                 case BUTTON_ADD_ACCOUNT: {
-                                    if (manager.isAvaliableAdd())
+                                    if (manager.isAvailableAdd())
                                         startLoginActivity();
                                     else
                                     Snackbar.make(content,
@@ -264,9 +265,10 @@ public class MainActivity extends AppCompatActivity {
                                                         super.onPositive(dialog);
                                                         if (account != null) {
                                                             manager.remove(account);
+                                                            if (manager.getCount() == 0) {
+                                                                startLoginActivity();
+                                                            }
                                                             authorizationService.refreshProfiles();
-                                                            Log.i("DBG", "[MainActivity]Total accounts befere delete - "
-                                                                    + manager.getCount());
                                                             Snackbar.make(content,
                                                                     "Вышел!",
                                                                     Snackbar.LENGTH_SHORT).show();
@@ -303,7 +305,6 @@ public class MainActivity extends AppCompatActivity {
 
     @OnMessage(ShowSnackbarEvent.class)
     public void onSnackShowEvent(ShowSnackbarEvent event) {
-        Log.i("DBG", "OK");
         Snackbar.make(content, event.getText(), Snackbar.LENGTH_SHORT).show();
     }
 
@@ -333,10 +334,28 @@ public class MainActivity extends AppCompatActivity {
             profiles.add(itemAdd);
         }
         headerNavigationDrawer.setProfiles(profiles);
+        setCurrentProfile(profiles);
+    }
+
+    private void setCurrentProfile(ArrayList<IProfile> profiles) {
+        ArrayList<IProfile> listProfiles = profiles;
+        Account currentAccount = manager.getCurrent();
+        for (IProfile profile : listProfiles) {
+            if (currentAccount.getUsername().equals(profile.getName().toString())) {
+                Log.i("DBG", "[MainActivity] Set headerNavigation the account = " + profile.getName());
+                headerNavigationDrawer.setActiveProfile(profile);
+                break;
+            }
+        }
     }
 
     private void startLoginActivity() {
         Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
+    }
+
+    private void startProfileActivity() {
+        Intent intent = new Intent(this, ProfileActivity.class);
         startActivity(intent);
     }
 }

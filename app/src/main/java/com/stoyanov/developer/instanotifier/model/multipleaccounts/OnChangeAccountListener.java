@@ -2,7 +2,7 @@ package com.stoyanov.developer.instanotifier.model.multipleaccounts;
 
 import com.stoyanov.developer.instanotifier.model.pojo.Account;
 
-public interface ChangeAccountListener {
+public interface OnChangeAccountListener {
 
     void onChangeAccount(Account oldAccount, Account newAccount);
 

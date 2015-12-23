@@ -4,19 +4,17 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
-public class EndlessScrollListener extends RecyclerView.OnScrollListener {
+public abstract class EndlessScrollListener extends RecyclerView.OnScrollListener {
 
+    private static final String TAG = "dbg";
     private LinearLayoutManager layoutManager;
-    private RecyclerView recyclerView;
-    private int visibleThreshold = 5;
-    private boolean loading = true;
-    private int previousTotal = 0;
-    private int firstVisibleItem;
     private int visibleItemCount;
     private int totalItemCount;
+    private int pastVisiblesItems;
+    private int lastItems;
+    private boolean loading = true;
 
-    public EndlessScrollListener(RecyclerView recyclerView, RecyclerView.LayoutManager layoutManager) {
-        this.recyclerView = recyclerView;
+    public EndlessScrollListener(RecyclerView.LayoutManager layoutManager) {
         if (layoutManager instanceof LinearLayoutManager) {
             this.layoutManager = (LinearLayoutManager) layoutManager;
         } else {
@@ -27,25 +25,28 @@ public class EndlessScrollListener extends RecyclerView.OnScrollListener {
     @Override
     public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
         super.onScrolled(recyclerView, dx, dy);
+        if (dy > 0) {
 
-        visibleItemCount = recyclerView.getChildCount();
-        totalItemCount = layoutManager.getItemCount();
-        firstVisibleItem = layoutManager.findFirstVisibleItemPosition();
+            visibleItemCount = layoutManager.getChildCount();
+            totalItemCount = layoutManager.getItemCount();
+            pastVisiblesItems = layoutManager.findFirstVisibleItemPosition();
 
-        if (loading) {
-            if (totalItemCount > previousTotal) {
-                loading = false;
-                previousTotal = totalItemCount;
+            if (totalItemCount > lastItems) {
+                lastItems = totalItemCount;
+                loading = true;
+            }
+
+            if (loading) {
+                if ((visibleItemCount + pastVisiblesItems) >= totalItemCount) {
+                    loading = false;
+                    Log.i(TAG, "onScrolled: visibleItemCount - " + visibleItemCount
+                            + ", totalItemCount - " + totalItemCount
+                            + ", pastVisiblesItems - " + pastVisiblesItems);
+                    loadNextItems();
+                }
             }
         }
-        if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
-            // End has been reached
-
-            Log.i("DBG", "End called!");
-
-            // Do something
-
-            loading = true;
-        }
     }
+
+    public abstract void loadNextItems();
 }

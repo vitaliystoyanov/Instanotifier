@@ -102,7 +102,7 @@ public class AuthorizationService {
     }
 
     @Ui
-    protected ShowSnackbarEvent displayMessage(String message) {
+    public ShowSnackbarEvent displayMessage(String message) {
         return new ShowSnackbarEvent(message);
     }
 

@@ -1,20 +1,19 @@
 package com.stoyanov.developer.instanotifier.model.multipleaccounts;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.stoyanov.developer.instanotifier.model.pojo.Account;
 import java.util.ArrayList;
 
 public class AccountManager {
 
-    private static final int MAX_ACCOUNTS = 2;
+    private OnChangeAccountListener onChangeAccountListener;
     private StorageAccount storage;
-    private ChangeAccountListener changeAccountListener;
+    private static final int MAX_ACCOUNTS = 2;
 
     public AccountManager(Context context) {
         this.storage = new StorageAccount(context);
-        changeAccountListener = null;
+        onChangeAccountListener = null;
     }
 
     public void insert(Account account) {
@@ -23,6 +22,14 @@ public class AccountManager {
 
     public void remove(Account account) {
         storage.delete(account);
+        Account current = getCurrent();
+        if (current == null) {
+            ArrayList<Account> accounts = storage.getAccounts();
+            if (!accounts.isEmpty()) {
+                Account lastAccount = accounts.get(0);
+                setCurrent(lastAccount);
+            }
+        }
     }
 
     public ArrayList<Account> getAll() {
@@ -43,11 +50,12 @@ public class AccountManager {
     }
 
     public void setCurrent(Account account) {
-        if (account != null) {
-            storage.setParameter(account.getUserId());
-            if (changeAccountListener != null) changeAccountListener.onChangeAccount(null, account);
-        } else {
+        if (account == null) {
             throw new NullPointerException();
+        }
+        storage.setParameter(account.getUserId());
+        if (onChangeAccountListener != null) {
+            onChangeAccountListener.onChangeAccount(null, account);
         }
     }
 
@@ -67,7 +75,7 @@ public class AccountManager {
         ArrayList<Account> list = storage.getAccounts();
         boolean flag = false;
         for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).getUserId().equals(account.getUserId())) {
+            if (list.get(i).equals(account)) {
                 flag = true;
                 break;
             }
@@ -79,16 +87,11 @@ public class AccountManager {
         return storage.getAmount();
     }
 
-    public boolean isAvaliableAdd() {
-        Log.i("DBG", "[AccountManager]Amount - " + storage.getAmount());
-        if (storage.getAmount() < MAX_ACCOUNTS) {
-            return true;
-        } else {
-            return false;
-        }
+    public boolean isAvailableAdd() {
+        return storage.getAmount() < MAX_ACCOUNTS;
     }
 
-    public void setChangeAccountListener(ChangeAccountListener changeAccountListener) {
-        this.changeAccountListener = changeAccountListener;
+    public void setOnChangeAccountListener(OnChangeAccountListener onChangeAccountListener) {
+        this.onChangeAccountListener = onChangeAccountListener;
     }
 }

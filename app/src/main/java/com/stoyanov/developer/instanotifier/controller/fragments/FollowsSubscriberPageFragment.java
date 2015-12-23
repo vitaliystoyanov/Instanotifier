@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.github.rahatarmanahmed.cpv.CircularProgressView;
 import com.joanzapata.android.asyncservice.api.annotation.InjectService;
@@ -18,7 +19,7 @@ import com.stoyanov.developer.instanotifier.controller.adapters.SubscriberRecycl
 import com.stoyanov.developer.instanotifier.model.serviceevents.LoadSubscribersEvent;
 import com.stoyanov.developer.instanotifier.model.services.SubscriberService;
 
-public class SubscriberPageFragment extends Fragment {
+public class FollowsSubscriberPageFragment extends Fragment {
 
     private CircularProgressView progressView;
     private SwipeRefreshLayout refreshLayout;
@@ -26,6 +27,7 @@ public class SubscriberPageFragment extends Fragment {
     private RecyclerView recyclerView;
     private LinearLayoutManager layoutManager;
     private SubscriberRecycleViewAdapter adapter;
+    private String title;
 
     @InjectService
     public SubscriberService subscriberService;
@@ -71,4 +73,14 @@ public class SubscriberPageFragment extends Fragment {
         progressView.setVisibility(View.INVISIBLE);
         adapter.addData(event.getList());
     }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+
 }

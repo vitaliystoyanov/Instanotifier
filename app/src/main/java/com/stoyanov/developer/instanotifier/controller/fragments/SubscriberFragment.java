@@ -1,7 +1,6 @@
 package com.stoyanov.developer.instanotifier.controller.fragments;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
@@ -27,7 +26,7 @@ public class SubscriberFragment extends Fragment implements MaterialTabListener 
     private MaterialTabHost tabHost;
     private ViewPager pager;
     private SubscriberViewPagerAdapter adapter;
-    private List<Fragment> tabsListFragment;
+    private List<String> tabsListstringss;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -47,11 +46,13 @@ public class SubscriberFragment extends Fragment implements MaterialTabListener 
 
         layout = (FABToolbarLayout) getActivity().findViewById(R.id.fabtoolbar);
 
-        tabsListFragment = new ArrayList<>();
-        tabsListFragment.add(new SubscriberPageFragment());
+        tabsListstringss = new ArrayList<>();
+        tabsListstringss.add("Follows");
+        tabsListstringss.add("Followers");
+        tabsListstringss.add("Non follows");
 
         pager = (ViewPager) getActivity().findViewById(R.id.viewpager);
-        adapter = new SubscriberViewPagerAdapter(getActivity().getSupportFragmentManager(), tabsListFragment);
+        adapter = new SubscriberViewPagerAdapter(getActivity().getSupportFragmentManager(), tabsListstringss);
         pager.setAdapter(adapter);
         pager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
@@ -60,6 +61,7 @@ public class SubscriberFragment extends Fragment implements MaterialTabListener 
             }
         });
 
+        pager.setCurrentItem(0);
         tabHost = (MaterialTabHost) getActivity().findViewById(R.id.tabHost);
         tabHost.addTab(
                 tabHost.newTab()
@@ -76,6 +78,7 @@ public class SubscriberFragment extends Fragment implements MaterialTabListener 
                         .setText("Non-back follows")
                         .setTabListener(this)
         );
+        pager.setCurrentItem(0);
     }
 
     @Override

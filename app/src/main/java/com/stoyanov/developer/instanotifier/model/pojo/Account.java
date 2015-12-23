@@ -41,4 +41,26 @@ public class Account {
     public void setUsername(String username) {
         this.username = username;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Account account = (Account) o;
+
+        if (userId != null ? !userId.equals(account.userId) : account.userId != null) return false;
+        if (token != null ? !token.equals(account.token) : account.token != null) return false;
+        return !(username != null ? !username.equals(account.username) : account.username != null);
+
+    }
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "userId='" + userId + '\'' +
+                ", token='" + token + '\'' +
+                ", username='" + username + '\'' +
+                '}';
+    }
 }

@@ -27,6 +27,8 @@ import java.util.List;
 public class FeedService {
 
     private static final int MEDIA_COUNT = 10;
+    private static MediaFeed userMediaNextPage;
+
 
     @ApplicationContext
     protected static Context context;
@@ -38,21 +40,21 @@ public class FeedService {
 
     public LoadFeedPostsEvent getPosts() {
         List<MediaFeedData> mediaList = null;
-        Instagram instagram = performAuthorization();
+        String token = getAccessToken();
+        if (token == null) {
+            Log.i("DBG", "[FeedService] Token == null! Return null.");
+            return null;
+        }
+        Instagram instagram = performAuthorization(token);
         try {
             MediaFeed mediaFeed = instagram.getUserFeeds();
             mediaList = mediaFeed.getData();
+
             Pagination pagination = mediaFeed.getPagination();
-            MediaFeed userMediaNextPage = instagram.getUserFeeds(pagination.getNextMaxId(), pagination.getNextMinId(), MEDIA_COUNT);
-            int counter = 0;
-            while (userMediaNextPage.getPagination() != null && counter < 1) {
-                mediaList.addAll(userMediaNextPage.getData());
-                Pagination pg = userMediaNextPage.getPagination();
-                userMediaNextPage = instagram.getUserFeeds(pg.getNextMaxId(), pg.getNextMinId(), MEDIA_COUNT);
-                counter++;
-            }
-            int mediaCount = mediaList.size();
-            Log.i("DBG", "[FeedService] Media count = " + mediaCount);
+            userMediaNextPage = instagram.getUserFeeds(pagination.getNextMaxId(), pagination.getNextMinId(), MEDIA_COUNT);
+            mediaList.addAll(userMediaNextPage.getData());
+
+            Log.i("DBG", "[FeedService] Media count = " + mediaList.size());
         } catch (InstagramException | NullPointerException e) {
             e.printStackTrace();
         }
@@ -60,10 +62,35 @@ public class FeedService {
         return new LoadFeedPostsEvent(list);
     }
 
+    public LoadFeedPostsEvent getNextPosts() {
+        ArrayList<MediaFeedData> mediaList = new ArrayList<>();
+        String token = getAccessToken();
+        if (token == null) {
+            Log.i("DBG", "[FeedService] Token == null! Return null.");
+            return null;
+        }
+        Instagram instagram = performAuthorization(token);
+
+        if (userMediaNextPage != null && userMediaNextPage.getPagination() != null) {
+            mediaList.addAll(userMediaNextPage.getData());
+            Pagination pg = userMediaNextPage.getPagination();
+            try {
+                userMediaNextPage = instagram.getUserFeeds(pg.getNextMaxId(), pg.getNextMinId(), MEDIA_COUNT);
+            } catch (InstagramException e) {
+                e.printStackTrace();
+            }
+        }
+
+        ArrayList<Post> nextList = convert(userMediaNextPage.getData());
+        LoadFeedPostsEvent event = new LoadFeedPostsEvent(nextList);
+        event.setOnlyAppend(true);
+        return event;
+    }
+
     @NonNull
-    private Instagram performAuthorization() {
+    private Instagram performAuthorization(String parameterToken) {
         Instagram instagram = new Instagram(Configuration.CLIENT_ID);
-        Token token = new Token(getAccessToken(), Configuration.CLIENT_ID);
+        Token token = new Token(parameterToken, Configuration.CLIENT_ID);
         instagram.setAccessToken(token);
         return instagram;
     }
@@ -71,6 +98,7 @@ public class FeedService {
     private String getAccessToken() {
         AccountManager manager = new AccountManager(context);
         Account account = manager.getCurrent();
+        if (account == null) return null;
         return account.getToken();
     }
 

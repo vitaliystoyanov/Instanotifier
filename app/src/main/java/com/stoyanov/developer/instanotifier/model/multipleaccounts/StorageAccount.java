@@ -45,7 +45,6 @@ public class StorageAccount {
     private ArrayList<Account> getList() {
         if (!isInitializationList()) {
             setAccounts(new ArrayList<Account>());
-            Log.i(TAG, "[StorageAccount]getList() == null");
         }
         ComplexListAccount object = preferences.getObject(KEY_LIST, ComplexListAccount.class);
         return object.get();

@@ -24,6 +24,7 @@ import com.stoyanov.developer.instanotifier.model.services.FeedService;
  */
 public class FeedFragment extends Fragment {
 
+    private static final String TAG = "DBG";
     private LinearLayoutManager layoutManager;
     private CircularProgressView progressView;
     private SwipeRefreshLayout refreshLayout;
@@ -46,7 +47,12 @@ public class FeedFragment extends Fragment {
         recyclerView = (RecyclerView) getActivity().findViewById(R.id.feed_recycler_view);
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(getActivity().getApplicationContext());
-        recyclerView.addOnScrollListener(new EndlessScrollListener(recyclerView, layoutManager));
+        recyclerView.addOnScrollListener(new EndlessScrollListener(layoutManager) {
+            @Override
+            public void loadNextItems() {
+                feedService.getNextPosts();
+            }
+        });
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(feedAdapter);
 
@@ -95,7 +101,9 @@ public class FeedFragment extends Fragment {
     public void onGetFeedPostsEvent(LoadFeedPostsEvent event) {
         progressView.setVisibility(View.INVISIBLE);
         refreshLayout.setRefreshing(false);
-        feedAdapter.clearData();
-        feedAdapter.addData(event.getList());
+        if (!event.isOnlyAppend()) {
+            feedAdapter.clearData();
+        }
+        feedAdapter.addData(event.getData());
     }
 }

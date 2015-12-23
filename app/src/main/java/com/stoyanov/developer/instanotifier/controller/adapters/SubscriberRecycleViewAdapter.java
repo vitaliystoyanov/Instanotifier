@@ -45,8 +45,8 @@ public class SubscriberRecycleViewAdapter extends RecyclerView.Adapter<Subscribe
         dataSet = new ArrayList<>();
         imageLoader = ImageLoader.getInstance();
         options = new DisplayImageOptions.Builder()
-                .cacheInMemory(true)
-                .cacheOnDisk(true)
+                //.cacheInMemory(true)
+                //.cacheOnDisk(true)
                 .resetViewBeforeLoading(true)
                 .bitmapConfig(Bitmap.Config.RGB_565)
                 .displayer(new FadeInBitmapDisplayer(DURATION_MILLIS_ANIMATION, true, true, true))
